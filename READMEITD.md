@@ -1,5 +1,7 @@
 READ ME: AR Bread Experience (DDA x ITD ASG1)
-Name: Tan Ye Kai Student ID: S10270501 Class: Year 2, Diploma in Immersive Media Unity Version: Unity 6 (6000.0.60f1)
+Name: Tan Ye Kai Student ID: S10270501 
+Name: Lee Jun Xuan Sean Student ID: S10270366H
+Class: Year 2, Diploma in Immersive Media Unity Version: Unity 6 (6000.0.60f1)
 
 
 
