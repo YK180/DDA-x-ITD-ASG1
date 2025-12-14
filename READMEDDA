@@ -1,0 +1,98 @@
+Project: AR Bread Experience (DDA x ITD Assignment 1) 
+Name: Tan Ye Kai Student ID: S10270501
+Name: Lee Jun Xuan Sean Student ID: S10270366H
+
+Services Used: Firebase Authentication, Firebase Realtime Database Tools: Unity (C#), HTML5/JS (Admin Dashboard)
+
+1. Project Overview
+This project integrates a cloud-based backend to provide persistent user profiles, secure authentication, and real-time economy tracking (coins/purchases). 
+The system is designed to handle asynchronous data streams between the Unity client and the Firebase cloud without interrupting the AR experience.
+
+
+                                                                                 
+2. Database Structure Design
+The database utilizes a NoSQL JSON structure optimized for fast read/write operations by User ID (UID).
+
+ Users
+ ├── [User_UID_String]
+ │    ├── email: "string"           // For identification
+ │    ├── coins: int                // In-game currency
+ │    ├── loginCount: int           // Activity tracking
+ │    ├── gamePlayCount: int        // Engagement tracking
+ │    ├── signupDate: "timestamp"   // ISO 8601 format
+ │    │
+ │    └── purchases                 // Nested Collection
+ │         ├── [Purchase_ID]
+ │         │    ├── item: "string"  // e.g., "Croissant"
+ │         │    ├── price: int      // e.g., 10
+ │         │    └── date: "timestamp"
+
+Design Rationale:
+Root Key (UID): Uses Firebase Auth UIDs as keys to ensure strictly unique, secure, and fast lookup times ($O(1)$ complexity).
+Flattened Hierarchy: Critical stats (coins, loginCount) are kept at the top level for instant retrieval during gameplay.
+Scalable History: The purchases node uses Firebase's Push() IDs (chronological unique keys) to allow an infinite history of transactions without data collision.
+
+
+
+3.Key Features & Implementation
+
+A. Authentication Services
+Service: Firebase Authentication (Email/Password).
+Functionality:
+
+Registration: Automatically triggers the creation of a generic User Profile in the Realtime Database with starting stats (0 coins).
+Login: Validates credentials and retrieves the unique UID to load specific user data.
+Error Handling: Provides real-time UI feedback for errors (e.g., "Invalid Password", "Email already in use") using try/catch blocks.
+
+B. Realtime Database Interactions
+The application performs full CRUD (Create, Read, Update) operations:
+
+OperationContext in ApplicationCreateWhen a user registers, a new node is created in Users/ with default values.
+ReadThe "Home" and "Store" scenes fetch the live coins balance to display to the player.
+UpdateLogin: Increments loginCount.  
+Store: Deducts coins and pushes a new record to purchases upon buying items.
+
+C. Async/Await Architecture
+All database calls use C# Async/Await tasks.
+
+Benefit: This prevents the game from "freezing" or "hanging" while waiting for the server to respond, ensuring a smooth AR experience even on slower networks.
+
+
+
+4. Admin Dashboard (Web Tool)
+A custom-built Frontend Web Interface (admin.html) was developed to visualize and analyze the raw JSON data exported from Firebase.
+
+Features:
+1.JSON Parsing: Instantly reads the exported Firebase JSON file.
+
+2.Analytics Engine: Automatically calculates:
+Total User Base.
+Total Revenue (Sum of all purchase prices).
+Best Selling Item (Algorithmically determines the most frequent item name).
+
+3.User Inspection: A tabular view allows the admin to click on any user row to view a detailed popup of their entire transaction history.
+
+
+
+5.Technical Highlights (Code Snippets)
+Singleton Pattern
+Used for FirebaseDBManager and AuthManager to ensure persistent connections across scene loads (DontDestroyOnLoad).
+
+Transaction Safety (Store Logic)
+To prevent cheating or errors during purchases, the code performs a client-side validation check before writing to the database:
+
+if (currentCoins >= price) {
+    // 1. Deduct Coins locally & on Server
+    // 2. Add Purchase Record to Server
+    // 3. Update UI
+} else {
+    // Show "Insufficient Funds" Error
+}
+
+
+
+6. How to Use the Admin Dashboard
+Export Data: Go to Firebase Console > Realtime Database > click (⋮) > Export JSON.
+Launch Tool: Open admin.html in any web browser (Chrome/Edge).
+Load Data: Click the "Load JSON File" button and select your exported file.
+View Stats: The dashboard will automatically generate graphs and tables based on the dataset.
